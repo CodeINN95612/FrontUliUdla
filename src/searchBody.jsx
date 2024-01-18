@@ -56,9 +56,7 @@ const Chatbot = () => {
         }
       })
       .then(data => {
-        console.log('Resultado de la API:', data);
         setCurrentAnswer(data?.currentAnswer);
-        console.log(data?.currentAnswer);
         setChat([...chat, { text: inputText, type: 'user' },{text: data?.currentAnswer, type:'chatbot'}]);
       })
       .catch(error => {

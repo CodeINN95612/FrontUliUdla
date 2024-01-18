@@ -1,31 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Styles from "./Chatbot.styles";
-import { ChatbotProps as Props } from "./Chatbot.types";
+import { MainContainer, ChatContainer, MessageList, Message, MessageInput, Avatar, TypingIndicator } from "@chatscope/chat-ui-kit-react";
+import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
+import UdlaLogo from "../../assets/udla.png";
+import { MediaRecorder as MD, register } from "extendable-media-recorder";
+import { connect } from "extendable-media-recorder-wav-encoder";
 
-import SendSVG from "../../assets/send-svgrepo-com.svg";
-
-const Chatbot: React.FC<Props> = (props) => {
+const Chatbot = (props) => {
   const [inputText, setInputText] = useState("");
   const [chat, setChat] = useState([]);
-  const [currentAnswer, setCurrentAnswer] = useState("");
-  const [error, setError] = useState(null); // State variable to track API errors
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputTextChange = (e) => {
-    setInputText(e.target.value);
+  const handleInputTextChange = (value) => {
+    setInputText(value);
   };
 
-  const handleEnterPress = (e) => {
-    if (e.key === "Enter") {
-      // Add the user's input message to the chat state instantly
+  const handleSend = () => {
+    if (inputText.trim()) {
       setChat([...chat, { text: inputText, type: "user" }]);
-      // Make the API call to get the chatbot's response
       fetchChatbotResponse();
       setInputText("");
     }
   };
 
   const fetchChatbotResponse = () => {
-    const apiUrl = "https://localhost:7103/api/Chat/makeTextConversation";
+    setIsLoading(true);
+
+    const apiUrl = 'https://udllamaapipresentation20240116105250.azurewebsites.net/api/Chat/makeTextConversation';
     const requestData = {
       text: inputText,
       previousRequests: [
@@ -54,56 +56,66 @@ const Chatbot: React.FC<Props> = (props) => {
         }
       })
       .then((data) => {
-        console.log("Resultado de la API:", data);
-        setCurrentAnswer(data?.currentAnswer);
-        console.log(data?.currentAnswer);
-        // Add the chatbot's response to the chat state
-        setChat([...chat,{ text: data?.currentQuestion, type: "user" }, { text: data?.currentAnswer, type: "chatbot" }]);
-        setError(null); // Reset the error state
+        setChat([
+          ...chat,
+          { text: data?.currentQuestion, type: "user" },
+          { text: data?.currentAnswer, type: "chatbot" },
+        ]);
+        setError(null);
       })
       .catch((error) => {
         console.error("Error:", error);
-        setError(error); // Set the error state when an error occurs
+        setError(error);
+      })
+      .finally(() => {
+        setIsLoading(false); 
       });
   };
 
+  async function conectar() {
+    await register(await connect());
+  }
   return (
     <Styles className="Chatbot">
       <div className="Chatbot__body">
-        {chat.map((message, index) => (
-          <div
-            key={index}
-            className={`Chatbot__${message.type === 'user' ? 'user' : 'chatbot'}`}
-          >
-            {message.text}
-          </div>
-        ))}
-        {/* <div className="message chatbot">
-          {currentAnswer}
-        </div> */}
-         {error && (
-          <div className="message error">
-            Error: {error.message}
-          </div>
-        )}
+        <MainContainer className="Chatbot__body">
+          <ChatContainer >
+            <MessageList>
+              {chat.map((message, index) => (
+                <Message
+                  key={index}
+                  model={{
+                    message: message.text,
+                    direction: message.type === "user" ? "outgoing" : "incoming",
+                  }}
+                >
+                  {message.type !== "user" ? <Avatar src={UdlaLogo} name={"Uli"} /> : null}
+                </Message>
+              ))}
+              {error && (
+                <Message
+                  model={{
+                    message: `Error: ${error.message}`,
+                    direction: "incoming",
+                  }}
+                />
+              )}
+            </MessageList>
+            <MessageInput
+              className="Chatbot__inputContainer"
+              placeholder="Type your message here"
+              value={inputText}
+              onChange={handleInputTextChange}
+              onSend={handleSend}
+              attachButton={false}
+              disabled={isLoading}
+            />
+          </ChatContainer>
+          {isLoading? <TypingIndicator content="Uli esta pensando"/> : null}
+        </MainContainer>
       </div>
-      <div className="Chatbot__inputContainer">
-      <input
-        type="text"
-        value={inputText}
-        onChange={handleInputTextChange}
-        onKeyPress={handleEnterPress}
-        placeholder="Escribe una pregunta y presiona Enter"
-        className="Chatbot__input"
-      />
-   {/* <img src={SendSVG} alt="Send" /> */}
-
-      </div>
-     
     </Styles>
-  )
+  );
 };
-
-Chatbot.defaultProps = {};
 
 export default Chatbot;

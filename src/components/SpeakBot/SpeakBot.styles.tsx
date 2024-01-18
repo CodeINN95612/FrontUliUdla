@@ -1,15 +1,15 @@
 import styled from "styled-components";
 
-import { ChatbotStyledProps as Props } from "./Chatbot.types";
+import { SpeakBotStyledProps as Props } from "./SpeakBot.types";
 
-const ChatbotStyled = styled.div<Props>`
-  width:100%;
+const SpeakBotStyled = styled.div<Props>`
+ width:100%;
   height:100%;
   margin-top:120px;
  z-index:-1;
 display:flex;
 flex-direction:column;
-  .Chatbot {
+  .SpeakBot {
     &__body{
       width:100%;
       /* padding:26px; */
@@ -57,4 +57,4 @@ max-width:500px;
   }
 `;
 
-export default ChatbotStyled;
+export default SpeakBotStyled;
