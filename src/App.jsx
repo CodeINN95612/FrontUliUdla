@@ -6,11 +6,7 @@ import Landing from './components/Landing/Landing'
 function App() {
 
   return (
-    <>
-    {/* <Header/>
-      <Chatbot/> */}
       <Landing/>
-    </>
   )
 }
 

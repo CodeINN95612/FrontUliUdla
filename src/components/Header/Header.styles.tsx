@@ -15,6 +15,15 @@ width:100%;
     height: 108px;
     width: 226px;
     }
+    &__selector{
+      margin:20px;
+      border-radius:20px;
+      background-color: #8d002e;
+      color:white;
+      width:200px;
+      align-items:center;
+      text-align:center;
+    }
   }
 `;
 
