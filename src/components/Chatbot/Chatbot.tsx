@@ -11,6 +11,13 @@ const Chatbot = (props) => {
   const [chat, setChat] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [previousRequest, setPreviousRequest]= useState([
+    {
+      question: "string",
+      answer: "string",
+    },
+  ])
+
 
   const handleInputTextChange = (value) => {
     setInputText(value);
@@ -30,12 +37,7 @@ const Chatbot = (props) => {
     const apiUrl = 'https://udllamaapipresentation20240116105250.azurewebsites.net/api/Chat/makeTextConversation';
     const requestData = {
       text: inputText,
-      previousRequests: [
-        {
-          question: "string",
-          answer: "string",
-        },
-      ],
+      previousRequests: previousRequest ,
       language: "string",
     };
 
@@ -61,6 +63,7 @@ const Chatbot = (props) => {
           { text: data?.currentQuestion, type: "user" },
           { text: data?.currentAnswer, type: "chatbot" },
         ]);
+        setPreviousRequest(data?.completeConversation);
         setError(null);
       })
       .catch((error) => {

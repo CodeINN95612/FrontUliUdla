@@ -28,13 +28,15 @@ const SpeakBot: React.FC<Props> = (props) => {
   ]);
   const [recording, setRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [audioPlayback, setAudioPlayback] = useState(null); // State to keep track of audio playback
 
   async function conectar() {
     await register(await connect());
   }
 
-
   function playBase64Audio(base64Audio: string): void {
+    stopAudio(); // Stop any playing audio before starting new playback
+
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const binaryData = atob(base64Audio);
     const arrayBuffer = new ArrayBuffer(binaryData.length);
@@ -54,9 +56,18 @@ const SpeakBot: React.FC<Props> = (props) => {
   
       // Start playing the audio
       source.start();
+
+      setAudioPlayback(source); // Set the current audio playback source
     }, (error) => {
       console.error('Error decoding audio data:', error);
     });
+  }
+
+  function stopAudio() {
+    if (audioPlayback) {
+      audioPlayback.stop();
+      setAudioPlayback(null);
+    }
   }
 
   async function callSpeechApi(inputText) {
@@ -131,6 +142,8 @@ const SpeakBot: React.FC<Props> = (props) => {
   }
 
   const handleStart = async () => {
+    stopAudio(); // Stop audio playback before starting recording
+
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     try {
       await conectar();
